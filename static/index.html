@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataPilot AI</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #0d1117;
+            --text-main: #e6edf3;
+            --text-dim: #7d8590;
+            --accent: #2f81f7;
+            --accent-hover: #1f6feb;
+            --border: #30363d;
+            --success: #238636;
+            --chat-user: #1f6feb;
+            --chat-ai: #21262d;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        /* UPLOAD STATE */
+        #upload-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-box {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .upload-box:hover, .upload-box.dragover {
+            border-color: var(--accent);
+            background: rgba(47, 129, 247, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-dim);
+        }
+
+        /* MAIN APP STATE */
+        #app-view {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+
+        .sidebar-header p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .column-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .column-item {
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .column-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .col-name {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .col-type {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            background: var(--bg);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+        }
+
+        .bubble {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+        }
+
+        .message.user .bubble {
+            background: var(--chat-user);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai .bubble {
+            background: var(--chat-ai);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .chart-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border: 1px solid var(--border);
+            background: white; /* Often charts are transparent or need white bg */
+        }
+
+        .tools-used {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-family: var(--font-mono);
+            background: var(--bg);
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .input-area {
+            padding: 1.5rem;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .input-box {
+            display: flex;
+            gap: 0.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: var(--font-main);
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            background: var(--border);
+            color: var(--text-dim);
+            cursor: not-allowed;
+        }
+
+        .loading-indicator {
+            display: none;
+            align-self: flex-start;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Markdown-like formatting inside bubble */
+        .bubble p { margin-bottom: 0.75rem; }
+        .bubble p:last-child { margin-bottom: 0; }
+        .bubble pre { background: var(--bg); padding: 0.5rem; border-radius: 4px; overflow-x: auto; margin: 0.5rem 0; border: 1px solid var(--border); }
+        .bubble code { font-family: var(--font-mono); font-size: 0.85em; background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; }
+        .bubble pre code { background: none; padding: 0; }
+        .bubble ul, .bubble ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📊 DataPilot <span>AI</span></h1>
+        <div id="status" style="color: var(--text-dim); font-size: 0.85rem;">Ready</div>
+    </header>
+
+    <!-- UPLOAD VIEW -->
+    <div id="upload-view">
+        <h2 style="font-size: 2rem; margin-bottom: 1rem; font-weight: 500;">Analyze any CSV</h2>
+        <p style="color: var(--text-dim); margin-bottom: 2rem;">Upload your dataset to start chatting with the agent.</p>
+        
+        <div id="drop-zone" class="upload-box" onclick="document.getElementById('file-input').click()">
+            <div class="upload-icon">📁</div>
+            <h3 style="margin-bottom: 0.5rem;">Click or drag file to this area to upload</h3>
+            <p style="color: var(--text-dim); font-size: 0.85rem;">Only .csv files. Maximum 10MB.</p>
+            <input type="file" id="file-input" accept=".csv" style="display: none;">
+        </div>
+    </div>
+
+    <!-- MAIN APP VIEW -->
+    <div id="app-view">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2 id="filename-display">dataset.csv</h2>
+                <p id="file-stats">0 rows • 0 columns</p>
+            </div>
+            <div style="padding: 0.5rem 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); border-bottom: 1px solid var(--border);">Columns</div>
+            <div id="column-list" class="column-list">
+                <!-- Columns populated here -->
+            </div>
+        </div>
+
+        <!-- CHAT INTERFACE -->
+        <div class="chat-container">
+            <div id="messages" class="messages">
+                <!-- Messages populated here -->
+                <div class="loading-indicator" id="loading">
+                    <div class="spinner"></div> Generating analysis...
+                </div>
+            </div>
+
+            <div class="input-area">
+                <form id="chat-form" class="input-box">
+                    <input type="text" id="query-input" placeholder="Ask anything about the dataset (e.g. 'Show me the correlation between salary and experience')" required autocomplete="off">
+                    <button type="submit" id="send-btn">Ask</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilename = null;
+
+        // Elements
+        const uploadView = document.getElementById('upload-view');
+        const appView = document.getElementById('app-view');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        
+        const filenameDisplay = document.getElementById('filename-display');
+        const fileStats = document.getElementById('file-stats');
+        const columnList = document.getElementById('column-list');
+        
+        const messagesContainer = document.getElementById('messages');
+        const chatForm = document.getElementById('chat-form');
+        const queryInput = document.getElementById('query-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loadingIndicator = document.getElementById('loading');
+        const statusEl = document.getElementById('status');
+
+        // Drag and Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            if (files.length) handleFiles(files[0]);
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) handleFiles(this.files[0]);
+        });
+
+        // Upload Logic
+        async function handleFiles(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please upload a .csv file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            statusEl.textContent = 'Uploading...';
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Upload failed');
+                }
+
+                currentFilename = data.filename;
+                filenameDisplay.textContent = currentFilename;
+                fileStats.textContent = `${data.rows.toLocaleString()} rows • ${data.columns.length} columns`;
+                
+                try {
+                    const colRes = await fetch('/columns/' + currentFilename);
+                    const colData = await colRes.json();
+                    renderColumns(colData.columns);
+                } catch(e) {
+                    // Fallback if rich columns fetch fails
+                    renderColumns(data.columns.map(c => ({name: c, dtype: 'unknown'})));
+                }
+                
+                uploadView.style.display = 'none';
+                appView.style.display = 'flex';
+                statusEl.textContent = 'Active Context: ' + currentFilename;
+                
+                addMessage('ai', `I've successfully loaded **${currentFilename}**. It has ${data.rows} rows and ${data.columns.length} columns. What would you like to know about it? You can type a question, or **click any column name** on the left to quickly analyze it.`);
+
+            } catch (err) {
+                alert(err.message);
+                statusEl.textContent = 'Upload failed';
+            }
+        }
+
+        // Sidebar render and click 
+        function renderColumns(columns) {
+            columnList.innerHTML = '';
+            columns.forEach(col => {
+                const item = document.createElement('div');
+                item.className = 'column-item';
+                item.title = 'Click to analyze this column';
+                
+                // Clicking a column auto-fills input and submits
+                item.onclick = () => {
+                    queryInput.value = `Show me the distribution of ${col.name} and provide summary statistics.`;
+                    queryInput.focus();
+                };
+
+                item.innerHTML = `
+                    <span class="col-name">${col.name}</span>
+                    <span class="col-type">${col.dtype}</span>
+                `;
+                columnList.appendChild(item);
+            });
+        }
+
+        // Chat logic
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = queryInput.value.trim();
+            if (!query || !currentFilename) return;
+
+            addMessage('user', query);
+            queryInput.value = '';
+            
+            // Set loading state
+            loadingIndicator.style.display = 'flex';
+            messagesContainer.appendChild(loadingIndicator); // Move to bottom
+            scrollToBottom();
+            
+            sendBtn.disabled = true;
+            queryInput.disabled = true;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        filename: currentFilename
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Analysis request failed');
+                }
+
+                renderAiResponse(data);
+
+            } catch (err) {
+                addMessage('ai', `**Error:** ${err.message}`);
+            } finally {
+                loadingIndicator.style.display = 'none';
+                sendBtn.disabled = false;
+                queryInput.disabled = false;
+                queryInput.focus();
+                scrollToBottom();
+            }
+        });
+
+        function renderAiResponse(data) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ai';
+            
+            let contentHtml = `<div class="bubble">`;
+            
+            // Format basic markdown (bold, newlines, code)
+            let formattedInsight = data.insight
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+                
+            contentHtml += `<p>${formattedInsight}</p>`;
+
+            // Attach chart if exists
+            if (data.chart_url) {
+                // adding a random cache-buster to ensure images reload if same filename generated
+                const imgUrl = `${data.chart_url}?t=${new Date().getTime()}`;
+                contentHtml += `<img src="${imgUrl}" class="chart-img" alt="Analysis Visualization">`;
+                contentHtml += `<div style="margin-top: 10px;"><a href="${imgUrl}" download target="_blank" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">Download Chart</a></div>`;
+            }
+
+            // Append tools used if any
+            if (data.tool_calls_made && data.tool_calls_made.length > 0) {
+                const toolNames = data.tool_calls_made.map(t => t.tool_name).join(', ');
+                contentHtml += `<div class="tools-used">🔧 Tools executed: ${toolNames}</div>`;
+            }
+            
+            contentHtml += `</div>`;
+            msgDiv.innerHTML = contentHtml;
+            
+            messagesContainer.insertBefore(msgDiv, loadingIndicator);
+            scrollToBottom();
+        }
+
+        function addMessage(role, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+            
+            let formattedText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+
+            msgDiv.innerHTML = `<div class="bubble"><p>${formattedText}</p></div>`;
+            messagesContainer.insertBefore(msgDiv, loadingIndicator);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
