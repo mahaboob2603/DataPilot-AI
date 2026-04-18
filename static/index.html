@@ -452,7 +452,8 @@
                     .replace(/\\n/g, '<br>');
 
                 let html = `<div class="w-full max-w-[85%] glass-card rounded-2xl rounded-bl-none p-6 space-y-4 shadow-lg border border-white/5">`;
-                html += `<div class="space-y-3 bubble text-[15px] leading-relaxed text-[#e3e2e8]"><p>${formattedInsight}</p></div>`;
+                html += `<div><h4 class="text-sm font-bold text-primary mb-2 uppercase tracking-wider flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">lightbulb</span> Insight</h4>`;
+                html += `<div class="space-y-3 bubble text-[15px] leading-relaxed text-[#e3e2e8]"><p>${formattedInsight}</p></div></div>`;
                 html += `</div>`;
                 msgContainer.innerHTML = html;
 
@@ -460,12 +461,15 @@
                     const imgUrl = `${content.chart_url}?t=${new Date().getTime()}`;
                     
                     const chartContainer = document.createElement('div');
-                    chartContainer.className = "bg-[#e3e2e8]/5 rounded-xl p-3 border border-white/5 overflow-hidden group relative mt-4";
+                    chartContainer.className = "mt-6";
                     chartContainer.innerHTML = `
-                        <img src="${imgUrl}" class="w-full object-contain rounded-lg max-h-[300px]" alt="Chart Analysis" onload="scrollToBottom()">
-                        <a href="${imgUrl}" target="_blank" class="absolute top-4 right-4 bg-black/60 backdrop-blur text-white px-3 py-1.5 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:bg-black/80">
-                            <span class="material-symbols-outlined text-[14px]">open_in_new</span> Expand
-                        </a>
+                        <h4 class="text-sm font-bold text-primary mb-2 uppercase tracking-wider flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">insert_chart</span> Distribution</h4>
+                        <div class="bg-[#e3e2e8]/5 rounded-xl p-3 border border-white/5 overflow-hidden group relative">
+                            <img src="${imgUrl}" class="w-full object-contain rounded-lg max-h-[300px]" alt="Chart Analysis" onload="scrollToBottom()">
+                            <a href="${imgUrl}" target="_blank" class="absolute top-4 right-4 bg-black/60 backdrop-blur text-white px-3 py-1.5 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:bg-black/80">
+                                <span class="material-symbols-outlined text-[14px]">open_in_new</span> Expand
+                            </a>
+                        </div>
                     `;
                     
                     const glassCard = msgContainer.querySelector('.glass-card');
