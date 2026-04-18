@@ -160,14 +160,12 @@
                     <!-- Columns injected here -->
                 </div>
             </div>
-            <!--
             <div class="mt-auto px-6 pt-6 border-t border-outline-variant/10 shrink-0">
-                <button onclick="location.reload()" class="w-full py-3 bg-surface-container-highest hover:bg-outline-variant/30 text-on-surface text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
+                <button onclick="resetApp()" class="w-full py-3 bg-surface-container-highest hover:bg-outline-variant/30 text-on-surface text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
                     <span class="material-symbols-outlined text-sm">restart_alt</span>
                     Start Over
                 </button>
             </div>
-            -->
         </aside>
 
         <!-- Main Chat Area -->
@@ -283,6 +281,35 @@
                 statusText.className = "text-[10px] uppercase tracking-widest font-bold text-red-500";
                 statusChip.querySelector('div').className = "w-2 h-2 rounded-full bg-red-500";
             }
+        }
+
+        function resetApp() {
+            // Hide app view, show upload view
+            appView.classList.add('hidden');
+            appView.classList.remove('flex');
+            uploadView.classList.remove('hidden');
+
+            // Reset state
+            currentFilename = null;
+            messagesContainer.innerHTML = ''; // Clear messages
+            columnList.innerHTML = '';
+            fileInput.value = ''; // Reset file input
+
+            // Add back the loading indicator template
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'flex justify-start';
+            loadingDiv.id = 'loading';
+            loadingDiv.style.display = 'none';
+            loadingDiv.innerHTML = `
+                <div class="max-w-[85%] glass-card rounded-2xl rounded-bl-none p-4 px-5 flex items-center gap-3">
+                    <div class="spinner"></div>
+                    <span class="text-sm text-outline">Agents are analyzing data and executing tools...</span>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            
+            // Reset status
+            setStatus('Ready', 'success');
         }
 
         // Upload Logic
