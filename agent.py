@@ -181,11 +181,16 @@ class DataPilotAgent:
 
                 print(f"     Result: {json.dumps(result, default=str)[:300]}")
 
+                # Truncate content to avoid exceeding token limits
+                content_str = json.dumps(result, default=str)
+                if len(content_str) > 2500:
+                    content_str = content_str[:2500] + "... [TRUNCATED for token limits]"
+
                 # Append tool result as a tool message
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tc.id,
-                    "content": json.dumps(result, default=str),
+                    "content": content_str,
                 })
 
             # Re-call Groq with updated messages
