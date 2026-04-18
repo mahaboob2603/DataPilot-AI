@@ -6,6 +6,9 @@ from tools.summarizer import summarize_data
 from tools.plotter import plot_distribution
 from tools.top_n import top_n_values
 from tools.filter_tool import filter_data
+from tools.data_cleaner import clean_data
+from tools.join_datasets import join_data
+from tools.forecast_trends import forecast_trends
 
 
 class MCPServer:
@@ -22,6 +25,9 @@ class MCPServer:
             "plot_distribution": plot_distribution,
             "top_n_values": top_n_values,
             "filter_data": filter_data,
+            "clean_data": clean_data,
+            "join_data": join_data,
+            "forecast_trends": forecast_trends,
         }
 
         # Tool schemas in Anthropic tool-use format
@@ -72,8 +78,8 @@ class MCPServer:
             "plot_distribution": {
                 "name": "plot_distribution",
                 "description": (
-                    "Generate a distribution chart for a given column. "
-                    "For numeric columns, produces a histogram with KDE curve. "
+                    "Generate an interactive distribution chart for a given column using Plotly. "
+                    "For numeric columns, produces a histogram. "
                     "For categorical columns, produces a horizontal bar chart of top values. "
                     "Use this for 'show distribution', 'plot', 'chart', or 'visualize' questions."
                 ),
@@ -103,7 +109,8 @@ class MCPServer:
                 "description": (
                     "Find the top N values in a column by count, sum, mean, max, or min. "
                     "Use this to answer questions like 'what are the top-selling products', "
-                    "'which region has highest revenue', 'most common categories', or 'highest speed'."
+                    "'which region has highest revenue', 'most common categories', or 'highest speed'. "
+                    "Results are also exported as a downloadable CSV."
                 ),
                 "input_schema": {
                     "type": "object",
@@ -136,7 +143,7 @@ class MCPServer:
                     "Filter rows in the CSV by a column condition. "
                     "Supports operators: eq (equals), gt (greater than), lt (less than), "
                     "gte (>=), lte (<=), contains (substring match). "
-                    "Returns the count of matching rows and a 10-row preview."
+                    "Returns the count of matching rows, a 10-row preview, and an export URL for downloading the filtered data."
                 ),
                 "input_schema": {
                     "type": "object",
@@ -162,10 +169,108 @@ class MCPServer:
                     "required": ["filename", "column", "operator", "value"],
                 },
             },
+            "clean_data": {
+                "name": "clean_data",
+                "description": (
+                    "Clean a CSV dataset automatically. Performs operations like: "
+                    "drop_duplicates (remove duplicate rows), fill_nulls (fill missing values with median/mode), "
+                    "drop_nulls (remove rows with missing data), fix_dates (convert date strings to proper format), "
+                    "strip_whitespace (trim spaces from text). Use 'auto' for all safe cleaning operations. "
+                    "Saves the cleaned file as a new CSV."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The uploaded CSV filename to clean",
+                        },
+                        "operations": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of cleaning operations: 'auto', 'drop_duplicates', 'fill_nulls', 'drop_nulls', 'fix_dates', 'strip_whitespace'",
+                            "default": ["auto"],
+                        },
+                    },
+                    "required": ["filename"],
+                },
+            },
+            "join_data": {
+                "name": "join_data",
+                "description": (
+                    "Join/merge two CSV datasets on a common column. "
+                    "Supports inner, left, right, and outer joins. "
+                    "The merged result is saved as a new CSV file that can be used for further analysis. "
+                    "Use this when the user wants to combine, merge, or join two datasets."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "file1": {
+                            "type": "string",
+                            "description": "Name of the first CSV file",
+                        },
+                        "file2": {
+                            "type": "string",
+                            "description": "Name of the second CSV file",
+                        },
+                        "join_column": {
+                            "type": "string",
+                            "description": "Column name to join on (must exist in both files)",
+                        },
+                        "join_type": {
+                            "type": "string",
+                            "enum": ["inner", "left", "right", "outer"],
+                            "description": "Type of SQL-style join to perform",
+                            "default": "inner",
+                        },
+                    },
+                    "required": ["file1", "file2", "join_column"],
+                },
+            },
+            "forecast_trends": {
+                "name": "forecast_trends",
+                "description": (
+                    "Forecast future trends for a numeric column based on historical date-value data. "
+                    "Uses polynomial regression to predict future values and generates an interactive chart "
+                    "showing historical data, trend line, and forecast. "
+                    "Use this for 'predict', 'forecast', 'future trends', or 'what will happen' questions. "
+                    "Requires a date column and a numeric value column."
+                ),
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The uploaded CSV filename",
+                        },
+                        "date_column": {
+                            "type": "string",
+                            "description": "Column containing date/time values",
+                        },
+                        "value_column": {
+                            "type": "string",
+                            "description": "Numeric column to forecast",
+                        },
+                        "periods": {
+                            "type": "integer",
+                            "description": "Number of future days to predict",
+                            "default": 30,
+                        },
+                        "aggregation": {
+                            "type": "string",
+                            "enum": ["sum", "mean", "count"],
+                            "description": "How to aggregate daily data",
+                            "default": "sum",
+                        },
+                    },
+                    "required": ["filename", "date_column", "value_column"],
+                },
+            },
         }
 
     def get_tool_definitions(self) -> list[dict]:
-        """Return all tool schemas for the Claude API call."""
+        """Return all tool schemas for the LLM API call."""
         return list(self._tool_schemas.values())
 
     def get_tool_schema(self, tool_name: str) -> dict | None:

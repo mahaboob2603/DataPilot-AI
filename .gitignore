@@ -25,6 +25,9 @@ outputs/
 .DS_Store
 Thumbs.db
 
+# Database
+*.db
+
 # IDE
 .vscode/
 .idea/

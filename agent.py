@@ -23,6 +23,9 @@ Your job:
 - Always start by calling load_csv if you need to understand the data structure
 - For "top" questions, use top_n_values with the most relevant column
 - For distribution or visual questions, use plot_distribution
+- For cleaning or fixing data, use clean_data
+- For merging/joining datasets, use join_data
+- For prediction/forecast questions, use forecast_trends (requires a date column and value column)
 - Mention specific numbers, column names, and values in your response
 - Do not make up data - only state what the tools return"""
 
@@ -75,6 +78,8 @@ class DataPilotAgent:
         """
         tool_calls_made = []
         chart_url = None
+        chart_json = None
+        export_url = None
         data_preview = None
 
         print(f"\n{'='*60}")
@@ -169,9 +174,15 @@ class DataPilotAgent:
                 except Exception as e:
                     result = {"error": str(e), "tool": tool_name}
 
-                # Capture chart URL if generated
+                # Capture chart URL/JSON if generated
                 if "chart_url" in result and result.get("chart_url"):
                     chart_url = result["chart_url"]
+                if "chart_json" in result and result.get("chart_json"):
+                    chart_json = result["chart_json"]
+
+                # Capture export URL if generated
+                if "export_url" in result and result.get("export_url"):
+                    export_url = result["export_url"]
 
                 # Capture data preview
                 if tool_name == "load_csv" and result.get("preview"):
@@ -182,7 +193,9 @@ class DataPilotAgent:
                 print(f"     Result: {json.dumps(result, default=str)[:300]}")
 
                 # Truncate content to avoid exceeding token limits
-                content_str = json.dumps(result, default=str)
+                # Remove chart_json from what we send to LLM (it's huge)
+                result_for_llm = {k: v for k, v in result.items() if k != "chart_json"}
+                content_str = json.dumps(result_for_llm, default=str)
                 if len(content_str) > 2500:
                     content_str = content_str[:2500] + "... [TRUNCATED for token limits]"
 
@@ -227,5 +240,7 @@ class DataPilotAgent:
             insight=insight,
             tool_calls_made=tool_calls_made,
             chart_url=chart_url,
+            chart_json=chart_json,
+            export_url=export_url,
             data_preview=data_preview,
         )

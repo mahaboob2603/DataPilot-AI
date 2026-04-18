@@ -1,11 +1,13 @@
 """Filter tool — filters rows in a CSV by column value with various operators."""
 
 import os
+import time
 import pandas as pd
 import numpy as np
 
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploads")
+CHART_OUTPUT_DIR = os.getenv("CHART_OUTPUT_DIR", "./outputs")
 
 
 def filter_data(filename: str, column: str, operator: str, value) -> dict:
@@ -19,7 +21,7 @@ def filter_data(filename: str, column: str, operator: str, value) -> dict:
         value: The value to compare against.
 
     Returns:
-        Dictionary with filtered row count and a 10-row preview.
+        Dictionary with filtered row count, preview, and export URL.
     """
     try:
         filepath = os.path.join(UPLOAD_DIR, filename)
@@ -46,7 +48,6 @@ def filter_data(filename: str, column: str, operator: str, value) -> dict:
 
         # Apply filter
         if operator == "eq":
-            # Handle numeric equality too
             if pd.api.types.is_numeric_dtype(col_data):
                 try:
                     mask = col_data == float(value)
@@ -85,6 +86,17 @@ def filter_data(filename: str, column: str, operator: str, value) -> dict:
                     clean_row[k] = v
             clean_preview.append(clean_row)
 
+        # Export filtered data to CSV
+        export_url = None
+        if len(filtered_df) > 0:
+            os.makedirs(CHART_OUTPUT_DIR, exist_ok=True)
+            timestamp = int(time.time())
+            base_name = os.path.splitext(filename)[0]
+            export_filename = f"{base_name}_filtered_{timestamp}.csv"
+            export_path = os.path.join(CHART_OUTPUT_DIR, export_filename)
+            filtered_df.to_csv(export_path, index=False)
+            export_url = f"/export/{export_filename}"
+
         return {
             "column": column,
             "operator": operator,
@@ -93,6 +105,7 @@ def filter_data(filename: str, column: str, operator: str, value) -> dict:
             "filtered_rows": len(filtered_df),
             "match_percentage": round(len(filtered_df) / len(df) * 100, 2) if len(df) > 0 else 0,
             "preview": clean_preview,
+            "export_url": export_url,
         }
 
     except Exception as e:
