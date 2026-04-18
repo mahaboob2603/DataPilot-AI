@@ -1,8 +1,8 @@
 # DataPilot AI 📊
 
-**Intelligent CSV Analysis Assistant** powered by Claude LLM and MCP tools.
+**Intelligent CSV Analysis Assistant** powered by Groq LLM and MCP tools.
 
-Upload any CSV dataset and ask questions in plain English. DataPilot AI uses Claude claude-sonnet-4-20250514 to orchestrate analytical tools — delivering instant insights, statistics, and charts.
+Upload any CSV dataset and ask questions in plain English. DataPilot AI uses the lightning-fast Groq Llama 3.1 8B model to orchestrate analytical tools — delivering instant insights, statistics, and charts.
 
 ---
 
@@ -15,9 +15,9 @@ pip install -r requirements.txt
 ```
 
 ### 2. Set your API key
-Edit `.env` and add your Anthropic API key:
+Edit `.env` and add your Groq API key:
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+GROQ_API_KEY=gsk_...
 ```
 
 ### 3. Generate sample data
@@ -42,14 +42,14 @@ Open **http://localhost:8000** in your browser.
 | 💬 Natural Language Queries | Ask questions about your data in plain English |
 | 📊 Auto-Charts | Automatic histogram/bar chart generation |
 | 🔍 Smart Analysis | Top-N, filtering, summaries, and distributions |
-| 🤖 Agentic LLM | Claude autonomously selects and chains tools |
+| 🤖 Agentic LLM | Groq Llama autonomously selects and chains tools |
 
 ## Architecture
 
 ```
-User Query → FastAPI → Claude Agent → MCP Tool Server → Tools → Results
+User Query → FastAPI → Groq Agent → MCP Tool Server → Tools → Results
                                         ↕ (agentic loop)
-                                      Claude API
+                                      Groq API
 ```
 
 ## API Endpoints
@@ -73,7 +73,7 @@ User Query → FastAPI → Claude Agent → MCP Tool Server → Tools → Result
 ## Tech Stack
 
 - **FastAPI** + Uvicorn
-- **Claude claude-sonnet-4-20250514** via Anthropic SDK
+- **Groq Llama-3.1-8b-instant** via Groq SDK
 - **Pandas** / **NumPy** for data analysis
 - **Matplotlib** / **Seaborn** for charts
 - **Pydantic v2** for schemas
