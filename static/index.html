@@ -1,299 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>DataPilot AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6366f1",
+                        "primary-container": "#4f46e5",
+                        "on-primary-container": "#ffffff",
+                        "background": "#0a0b0f",
+                        "surface": "#121317",
+                        "surface-container-low": "#1a1b20",
+                        "surface-container-highest": "#343439",
+                        "outline": "#908fa0",
+                        "outline-variant": "#464554",
+                        "on-surface": "#e3e2e8",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --bg: #0d1117;
-            --bg-card: #161b22;
-            --bg-input: #0d1117;
-            --text-main: #e6edf3;
-            --text-dim: #7d8590;
-            --accent: #2f81f7;
-            --accent-hover: #1f6feb;
-            --border: #30363d;
-            --success: #238636;
-            --chat-user: #1f6feb;
-            --chat-ai: #21262d;
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        body { font-family: 'Inter', sans-serif; background-color: #0a0b0f; color: #e3e2e8; }
+        h1, h2, h3, h4, .font-headline { font-family: 'Manrope', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            line-height: 1.5;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        header {
-            padding: 1rem 2rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-card);
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        h1 span {
-            color: var(--accent);
-        }
-
-        /* UPLOAD STATE */
-        #upload-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .upload-box {
-            background: var(--bg-card);
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 3rem;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
-        }
-
-        .upload-box:hover, .upload-box.dragover {
-            border-color: var(--accent);
-            background: rgba(47, 129, 247, 0.05);
-        }
-
-        .upload-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--text-dim);
-        }
-
-        /* MAIN APP STATE */
-        #app-view {
-            display: none;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sidebar-header h2 {
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-            word-break: break-all;
-        }
-
-        .sidebar-header p {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
-
-        .column-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0.5rem 0;
-        }
-
-        .column-item {
-            padding: 0.5rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .column-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .col-name {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            color: var(--accent);
-        }
-
-        .col-type {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            background: var(--bg);
-            padding: 0.1rem 0.4rem;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-        }
-
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg);
-        }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .message {
-            display: flex;
-            flex-direction: column;
-            max-width: 85%;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            align-items: flex-end;
-        }
-
-        .message.ai {
-            align-self: flex-start;
-        }
-
-        .bubble {
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            font-size: 0.95rem;
-        }
-
-        .message.user .bubble {
-            background: var(--chat-user);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.ai .bubble {
-            background: var(--chat-ai);
-            border: 1px solid var(--border);
-            border-bottom-left-radius: 4px;
-        }
-
-        .chart-img {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 1rem;
-            border: 1px solid var(--border);
-            background: white; /* Often charts are transparent or need white bg */
-        }
-
-        .tools-used {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-top: 0.5rem;
-            font-family: var(--font-mono);
-            background: var(--bg);
-            padding: 0.5rem;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-
-        .input-area {
-            padding: 1.5rem;
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-        }
-
-        .input-box {
-            display: flex;
-            gap: 0.5rem;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: var(--font-main);
-            outline: none;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 1px var(--accent);
-        }
-
-        button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background: var(--accent-hover);
-        }
-
-        button:disabled {
-            background: var(--border);
-            color: var(--text-dim);
-            cursor: not-allowed;
-        }
-
-        .loading-indicator {
-            display: none;
-            align-self: flex-start;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            align-items: center;
-            gap: 0.5rem;
+        .text-gradient {
+            background: linear-gradient(to bottom right, #ffffff 30%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .spinner {
             width: 16px;
             height: 16px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #6366f1;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -302,66 +63,157 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Markdown-like formatting inside bubble */
+        /* Markdown formatting for AI chat bubbles */
         .bubble p { margin-bottom: 0.75rem; }
         .bubble p:last-child { margin-bottom: 0; }
-        .bubble pre { background: var(--bg); padding: 0.5rem; border-radius: 4px; overflow-x: auto; margin: 0.5rem 0; border: 1px solid var(--border); }
-        .bubble code { font-family: var(--font-mono); font-size: 0.85em; background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; }
+        .bubble pre { background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; border: 1px solid rgba(255,255,255,0.1); }
+        .bubble code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: rgba(0,0,0,0.3); padding: 0.1rem 0.3rem; border-radius: 3px; }
         .bubble pre code { background: none; padding: 0; }
-        .bubble ul, .bubble ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
-        
+        .bubble ul, .bubble ol { margin-left: 1.5rem; margin-bottom: 0.75rem; list-style: disc; }
+        .bubble strong { font-weight: 600; color: #ffffff; }
+
+        #messages {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99,102,241,0.3) transparent;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="bg-background text-on-surface flex flex-col h-screen overflow-hidden selection:bg-primary/30">
 
-    <header>
-        <h1>📊 DataPilot <span>AI</span></h1>
-        <div id="status" style="color: var(--text-dim); font-size: 0.85rem;">Ready</div>
+    <!-- TopAppBar -->
+    <header class="bg-[#121317]/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-[0_0_20px_rgba(99,102,241,0.08)] flex justify-between items-center w-full px-8 h-16 z-50 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-surface-container-low border border-outline-variant/20 shadow-lg">
+                <span class="material-symbols-outlined text-[18px] text-[#6366f1]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+            </div>
+            <span class="text-xl font-bold tracking-tighter text-[#e3e2e8] font-headline">
+                DataPilot <span class="text-primary">AI</span>
+            </span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div id="status-chip" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 transition-all">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span id="status-text" class="text-[10px] uppercase tracking-widest font-bold text-emerald-400">Ready</span>
+            </div>
+        </div>
     </header>
 
     <!-- UPLOAD VIEW -->
-    <div id="upload-view">
-        <h2 style="font-size: 2rem; margin-bottom: 1rem; font-weight: 500;">Analyze any CSV</h2>
-        <p style="color: var(--text-dim); margin-bottom: 2rem;">Upload your dataset to start chatting with the agent.</p>
-        
-        <div id="drop-zone" class="upload-box" onclick="document.getElementById('file-input').click()">
-            <div class="upload-icon">📁</div>
-            <h3 style="margin-bottom: 0.5rem;">Click or drag file to this area to upload</h3>
-            <p style="color: var(--text-dim); font-size: 0.85rem;">Only .csv files. Maximum 10MB.</p>
-            <input type="file" id="file-input" accept=".csv" style="display: none;">
-        </div>
-    </div>
-
-    <!-- MAIN APP VIEW -->
-    <div id="app-view">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2 id="filename-display">dataset.csv</h2>
-                <p id="file-stats">0 rows • 0 columns</p>
+    <main id="upload-view" class="relative flex-1 flex flex-col items-center justify-center overflow-hidden w-full h-full">
+        <div class="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#6366f1]/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div class="z-10 text-center max-w-3xl px-6">
+            <h1 class="text-5xl md:text-7xl font-extrabold font-headline tracking-tight mb-6 text-gradient">
+                Analyze any CSV
+            </h1>
+            <p class="text-lg md:text-xl text-[#908fa0] mb-12">
+                Upload your dataset and let AI do the heavy lifting
+            </p>
+            
+            <div class="relative group cursor-pointer" onclick="document.getElementById('file-input').click()" id="drop-zone">
+                <div class="glass-card rounded-[2rem] p-12 w-full max-w-2xl mx-auto transition-all duration-500 group-hover:shadow-[0_0_40px_rgba(99,102,241,0.15)] group-hover:border-primary/40">
+                    <div class="border-2 border-dashed border-[#6366f1]/30 rounded-2xl p-16 flex flex-col items-center justify-center transition-all duration-300 group-hover:bg-[#6366f1]/5 group-hover:border-[#6366f1]/60">
+                        <div class="mb-6 relative">
+                            <div class="absolute inset-0 bg-[#6366f1] blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                            <span class="material-symbols-outlined text-5xl text-[#6366f1] relative" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+                        </div>
+                        <h3 class="text-2xl font-bold font-headline text-on-surface mb-2">Click or drag file to upload</h3>
+                        <p class="text-outline text-sm">.csv files only · Max 10MB</p>
+                    </div>
+                </div>
+                <input type="file" id="file-input" accept=".csv" style="display: none;">
             </div>
-            <div style="padding: 0.5rem 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); border-bottom: 1px solid var(--border);">Columns</div>
-            <div id="column-list" class="column-list">
-                <!-- Columns populated here -->
+            
+            <div class="mt-12 flex flex-wrap justify-center gap-4">
+                <div class="flex items-center gap-2 px-6 py-3 rounded-full bg-surface-container-low border border-outline-variant/15">
+                    <span class="material-symbols-outlined text-primary text-sm">bar_chart</span>
+                    <span class="text-sm font-semibold tracking-wide">Smart Analysis</span>
+                </div>
+                <div class="flex items-center gap-2 px-6 py-3 rounded-full bg-surface-container-low border border-outline-variant/15">
+                    <span class="material-symbols-outlined text-primary text-sm">show_chart</span>
+                    <span class="text-sm font-semibold tracking-wide">Auto Charts</span>
+                </div>
+                <div class="flex items-center gap-2 px-6 py-3 rounded-full bg-surface-container-low border border-outline-variant/15">
+                    <span class="material-symbols-outlined text-primary text-sm">search_insights</span>
+                    <span class="text-sm font-semibold tracking-wide">Column Insights</span>
+                </div>
             </div>
         </div>
+    </main>
 
-        <!-- CHAT INTERFACE -->
-        <div class="chat-container">
-            <div id="messages" class="messages">
-                <!-- Messages populated here -->
-                <div class="loading-indicator" id="loading">
-                    <div class="spinner"></div> Generating analysis...
+    <!-- APP VIEW -->
+    <div id="app-view" class="hidden flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-[#1a1b20] border-r border-outline-variant/10 flex flex-col py-6 overflow-hidden">
+            <div class="px-6 mb-8 shrink-0">
+                <div class="p-4 bg-[rgba(255,255,255,0.02)] rounded-xl border border-outline-variant/10">
+                    <h3 id="filename-display" class="text-on-surface font-mono font-bold text-sm mb-1 truncate" title="dataset.csv">dataset.csv</h3>
+                    <p id="file-stats" class="text-[#908fa0] text-xs">0 rows · 0 columns</p>
+                </div>
+            </div>
+            <div class="px-6 mb-4 flex-1 flex flex-col min-h-0">
+                <p class="text-[#908fa0] text-[10px] font-black uppercase tracking-[0.2em] mb-4 shrink-0">Columns</p>
+                <div id="column-list" class="space-y-1.5 overflow-y-auto pr-2" style="scrollbar-width: thin;">
+                    <!-- Columns injected here -->
+                </div>
+            </div>
+            <!--
+            <div class="mt-auto px-6 pt-6 border-t border-outline-variant/10 shrink-0">
+                <button onclick="location.reload()" class="w-full py-3 bg-surface-container-highest hover:bg-outline-variant/30 text-on-surface text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined text-sm">restart_alt</span>
+                    Start Over
+                </button>
+            </div>
+            -->
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 flex flex-col relative bg-[#121317]">
+            <div class="absolute top-0 left-0 w-full h-full pointer-events-none bg-[radial-gradient(at_top_left,rgba(99,102,241,0.05),transparent_40%)]"></div>
+            
+            <!-- Messages -->
+            <div id="messages" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 pb-32 z-10 scroll-smooth">
+                <!-- loading indicator hidden by default -->
+                <div class="flex justify-start" id="loading" style="display: none;">
+                    <div class="max-w-[85%] glass-card rounded-2xl rounded-bl-none p-4 px-5 flex items-center gap-3">
+                        <div class="spinner"></div>
+                        <span class="text-sm text-outline">Agents are analyzing data and executing tools...</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="input-area">
-                <form id="chat-form" class="input-box">
-                    <input type="text" id="query-input" placeholder="Ask anything about the dataset (e.g. 'Show me the correlation between salary and experience')" required autocomplete="off">
-                    <button type="submit" id="send-btn">Ask</button>
+            <!-- Bottom Input Bar -->
+            <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 bg-gradient-to-t from-[#121317] via-[#121317] to-transparent z-20">
+                <form id="chat-form" class="max-w-4xl mx-auto relative group">
+                    <input id="query-input" class="w-full bg-[#1a1b20]/90 backdrop-blur-xl border border-[#6366f1]/30 focus:border-[#6366f1] focus:ring-0 rounded-full py-4 pl-8 pr-16 text-on-surface placeholder:text-[#908fa0] transition-all shadow-lg" placeholder="Ask anything about the dataset..." type="text" autocomplete="off" required/>
+                    <button id="send-btn" type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white p-2.5 rounded-full hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
+                    </button>
                 </form>
+                
+                <div class="flex justify-center gap-3 mt-4 flex-wrap max-w-4xl mx-auto hidden md:flex">
+                    <button type="button" onclick="setQuery('Summarize the dataset')" class="text-xs text-[#908fa0] hover:text-primary bg-surface-container-highest/50 hover:bg-[#6366f1]/10 px-4 py-2 rounded-full border border-outline-variant/30 hover:border-primary/50 transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[14px]">summarize</span>
+                        <span class="font-medium">Summarize Data</span>
+                    </button>
+                    <button type="button" onclick="setQuery('Detect anomalies in the dataset')" class="text-xs text-[#908fa0] hover:text-primary bg-surface-container-highest/50 hover:bg-[#6366f1]/10 px-4 py-2 rounded-full border border-outline-variant/30 hover:border-primary/50 transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[14px]">troubleshoot</span>
+                        <span class="font-medium">Detect Anomalies</span>
+                    </button>
+                    <button type="button" onclick="setQuery('Plot the distribution of data')" class="text-xs text-[#908fa0] hover:text-primary bg-surface-container-highest/50 hover:bg-[#6366f1]/10 px-4 py-2 rounded-full border border-outline-variant/30 hover:border-primary/50 transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[14px]">bar_chart</span>
+                        <span class="font-medium">Plot Distribution</span>
+                    </button>
+                    <button type="button" onclick="setQuery('Find top values')" class="text-xs text-[#908fa0] hover:text-primary bg-surface-container-highest/50 hover:bg-[#6366f1]/10 px-4 py-2 rounded-full border border-outline-variant/30 hover:border-primary/50 transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[14px]">list</span>
+                        <span class="font-medium">Find Top Values</span>
+                    </button>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
@@ -382,7 +234,9 @@
         const queryInput = document.getElementById('query-input');
         const sendBtn = document.getElementById('send-btn');
         const loadingIndicator = document.getElementById('loading');
-        const statusEl = document.getElementById('status');
+        
+        const statusChip = document.getElementById('status-chip');
+        const statusText = document.getElementById('status-text');
 
         // Drag and Drop
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -395,11 +249,11 @@
         }
 
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+            dropZone.addEventListener(eventName, () => dropZone.querySelector('.glass-card').classList.add('border-primary', 'bg-primary/5'), false);
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+            dropZone.addEventListener(eventName, () => dropZone.querySelector('.glass-card').classList.remove('border-primary', 'bg-primary/5'), false);
         });
 
         dropZone.addEventListener('drop', (e) => {
@@ -411,6 +265,25 @@
         fileInput.addEventListener('change', function() {
             if (this.files.length) handleFiles(this.files[0]);
         });
+        
+        function setQuery(text) {
+            queryInput.value = text;
+            chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+
+        // Update status UI
+        function setStatus(text, type = 'success') {
+            statusText.textContent = text;
+            if (type === 'active') {
+                statusChip.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 transition-all";
+                statusText.className = "text-[10px] font-mono lowercase font-medium text-primary";
+                statusChip.querySelector('div').className = "w-2 h-2 rounded-full bg-primary animate-pulse";
+            } else if (type === 'error') {
+                statusChip.className = "flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 transition-all";
+                statusText.className = "text-[10px] uppercase tracking-widest font-bold text-red-500";
+                statusChip.querySelector('div').className = "w-2 h-2 rounded-full bg-red-500";
+            }
+        }
 
         // Upload Logic
         async function handleFiles(file) {
@@ -421,7 +294,7 @@
 
             const formData = new FormData();
             formData.append('file', file);
-            statusEl.textContent = 'Uploading...';
+            statusText.textContent = 'Uploading...';
             
             try {
                 const response = await fetch('/upload', {
@@ -431,52 +304,52 @@
                 
                 const data = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Upload failed');
-                }
+                if (!response.ok) throw new Error(data.detail || 'Upload failed');
 
                 currentFilename = data.filename;
                 filenameDisplay.textContent = currentFilename;
-                fileStats.textContent = `${data.rows.toLocaleString()} rows • ${data.columns.length} columns`;
+                filenameDisplay.title = currentFilename;
+                fileStats.textContent = `${data.rows.toLocaleString()} rows · ${data.columns.length} columns`;
                 
                 try {
                     const colRes = await fetch('/columns/' + currentFilename);
                     const colData = await colRes.json();
                     renderColumns(colData.columns);
                 } catch(e) {
-                    // Fallback if rich columns fetch fails
                     renderColumns(data.columns.map(c => ({name: c, dtype: 'unknown'})));
                 }
                 
-                uploadView.style.display = 'none';
-                appView.style.display = 'flex';
-                statusEl.textContent = 'Active Context: ' + currentFilename;
+                uploadView.classList.add('hidden');
+                appView.classList.remove('hidden');
+                appView.classList.add('flex');
                 
-                addMessage('ai', `I've successfully loaded **${currentFilename}**. It has ${data.rows} rows and ${data.columns.length} columns. What would you like to know about it? You can type a question, or **click any column name** on the left to quickly analyze it.`);
+                setStatus(`Active: ${currentFilename}`, 'active');
+                
+                addMessage('ai', {
+                    insight: `I've successfully loaded **${currentFilename}**. It has ${data.rows} rows and ${data.columns.length} columns. What would you like to know about it? You can type a question, or **click any column name** on the left to quickly analyze it.`
+                });
 
             } catch (err) {
                 alert(err.message);
-                statusEl.textContent = 'Upload failed';
+                setStatus('Upload failed', 'error');
             }
         }
 
-        // Sidebar render and click 
         function renderColumns(columns) {
             columnList.innerHTML = '';
             columns.forEach(col => {
                 const item = document.createElement('div');
-                item.className = 'column-item';
+                item.className = 'flex items-center justify-between group cursor-pointer px-2 py-1.5 rounded hover:bg-white/5 transition-colors';
                 item.title = 'Click to analyze this column';
                 
-                // Clicking a column auto-fills input and submits
                 item.onclick = () => {
                     queryInput.value = `Show me the distribution of ${col.name} and provide summary statistics.`;
                     queryInput.focus();
                 };
 
                 item.innerHTML = `
-                    <span class="col-name">${col.name}</span>
-                    <span class="col-type">${col.dtype}</span>
+                    <span class="font-mono text-xs text-primary group-hover:text-white truncate pr-2">${col.name}</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container-highest text-outline font-mono uppercase shrink-0 border border-outline-variant/30">${col.dtype}</span>
                 `;
                 columnList.appendChild(item);
             });
@@ -491,7 +364,7 @@
             addMessage('user', query);
             queryInput.value = '';
             
-            // Set loading state
+            // Loading state
             loadingIndicator.style.display = 'flex';
             messagesContainer.appendChild(loadingIndicator); // Move to bottom
             scrollToBottom();
@@ -510,15 +383,12 @@
                 });
 
                 const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Analysis request failed');
 
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Analysis request failed');
-                }
-
-                renderAiResponse(data);
+                addMessage('ai', data);
 
             } catch (err) {
-                addMessage('ai', `**Error:** ${err.message}`);
+                addMessage('ai', { insight: `**Error:** ${err.message}` });
             } finally {
                 loadingIndicator.style.display = 'none';
                 sendBtn.disabled = false;
@@ -528,59 +398,65 @@
             }
         });
 
-        function renderAiResponse(data) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message ai';
+        function addMessage(role, content) {
+            const msgContainer = document.createElement('div');
+            msgContainer.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
             
-            let contentHtml = `<div class="bubble">`;
-            
-            // Format basic markdown (bold, newlines, code)
-            let formattedInsight = data.insight
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>');
+            if (role === 'user') {
+                msgContainer.innerHTML = `
+                    <div class="max-w-[75%] bg-gradient-to-br from-[#6366f1] to-[#4f46e5] text-white px-6 py-4 rounded-[2rem] rounded-br-none shadow-[0_10px_20px_rgba(99,102,241,0.15)] glow-effect">
+                        <p class="text-[15px] leading-relaxed">${content}</p>
+                    </div>
+                `;
+            } else {
+                // Formatting markdown
+                let formattedInsight = content.insight
+                    .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\\n\\n/g, '</p><p>')
+                    .replace(/\\n/g, '<br>');
+
+                let html = `<div class="w-full max-w-[85%] glass-card rounded-2xl rounded-bl-none p-6 space-y-4 shadow-lg border border-white/5">`;
+                html += `<div class="space-y-3 bubble text-[15px] leading-relaxed text-[#e3e2e8]"><p>${formattedInsight}</p></div>`;
+
+                if (content.chart_url) {
+                    const imgUrl = `${content.chart_url}?t=${new Date().getTime()}`;
+                    html += `
+                        <div class="bg-[#e3e2e8]/5 rounded-xl p-3 border border-white/5 overflow-hidden group relative">
+                            <img src="${imgUrl}" class="w-full object-contain rounded-lg max-h-[300px]" alt="Chart Analysis">
+                            <a href="${imgUrl}" target="_blank" class="absolute top-4 right-4 bg-black/60 backdrop-blur text-white px-3 py-1.5 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:bg-black/80">
+                                <span class="material-symbols-outlined text-[14px]">open_in_new</span> Expand
+                            </a>
+                        </div>
+                    `;
+                }
+
+                if (content.tool_calls_made && content.tool_calls_made.length > 0) {
+                    const toolNames = content.tool_calls_made.map(t => t.tool_name).join(', ');
+                    html += `
+                        <div class="flex items-center gap-3 pt-2">
+                            <div class="flex items-center gap-2 bg-[#0d0e12] border border-outline-variant/30 px-3 py-1.5 rounded-full">
+                                <span class="text-[10px] font-mono text-outline uppercase tracking-wider flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[13px]">build</span> Tools:
+                                </span>
+                                <span class="text-[10px] font-mono text-primary">${toolNames}</span>
+                            </div>
+                        </div>
+                    `;
+                }
                 
-            contentHtml += `<p>${formattedInsight}</p>`;
-
-            // Attach chart if exists
-            if (data.chart_url) {
-                // adding a random cache-buster to ensure images reload if same filename generated
-                const imgUrl = `${data.chart_url}?t=${new Date().getTime()}`;
-                contentHtml += `<img src="${imgUrl}" class="chart-img" alt="Analysis Visualization">`;
-                contentHtml += `<div style="margin-top: 10px;"><a href="${imgUrl}" download target="_blank" style="color: var(--accent); text-decoration: none; font-size: 0.85rem;">Download Chart</a></div>`;
-            }
-
-            // Append tools used if any
-            if (data.tool_calls_made && data.tool_calls_made.length > 0) {
-                const toolNames = data.tool_calls_made.map(t => t.tool_name).join(', ');
-                contentHtml += `<div class="tools-used">🔧 Tools executed: ${toolNames}</div>`;
+                html += `</div>`;
+                msgContainer.innerHTML = html;
             }
             
-            contentHtml += `</div>`;
-            msgDiv.innerHTML = contentHtml;
-            
-            messagesContainer.insertBefore(msgDiv, loadingIndicator);
-            scrollToBottom();
-        }
-
-        function addMessage(role, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${role}`;
-            
-            let formattedText = text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>');
-
-            msgDiv.innerHTML = `<div class="bubble"><p>${formattedText}</p></div>`;
-            messagesContainer.insertBefore(msgDiv, loadingIndicator);
+            messagesContainer.insertBefore(msgContainer, loadingIndicator);
             scrollToBottom();
         }
 
         function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 50);
         }
     </script>
 </body>
