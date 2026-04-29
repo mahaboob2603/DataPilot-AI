@@ -6,7 +6,7 @@ import FileUpload from './components/FileUpload';
 import ColumnsPanel from './components/ColumnsPanel';
 import './App.css';
 
-const API_BASE_URL = 'http://127.0.0.1:8001';
+const API_BASE_URL = import.meta.env.DEV ? 'http://127.0.0.1:8001' : '';
 
 // ── Three.js Starfield Background ──────────────────────
 function ThreeBackground() {

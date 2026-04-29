@@ -16,6 +16,9 @@ import database as db
 
 load_dotenv()
 
+# Detect if running on Vercel
+IS_VERCEL = os.getenv("VERCEL", "") == "1"
+
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploads")
 CHART_OUTPUT_DIR = os.getenv("CHART_OUTPUT_DIR", "./outputs")
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "10"))
@@ -26,7 +29,8 @@ async def lifespan(app: FastAPI):
     """Create required directories on startup."""
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     os.makedirs(CHART_OUTPUT_DIR, exist_ok=True)
-    os.makedirs("static", exist_ok=True)
+    if not IS_VERCEL:
+        os.makedirs("static", exist_ok=True)
     db.init_db()
     print("[START] DataPilot AI server started")
     print(f"   Uploads dir: {os.path.abspath(UPLOAD_DIR)}")
@@ -51,11 +55,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static files (legacy HTML frontend)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve static files (legacy HTML frontend) — skip on Vercel
+if not IS_VERCEL and os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Initialize agent
-agent = DataPilotAgent()
+# Lazy agent initialization (avoids crash if env vars aren't ready at import time)
+_agent = None
+
+def get_agent():
+    global _agent
+    if _agent is None:
+        _agent = DataPilotAgent()
+    return _agent
 
 
 # ─── Health Check ───────────────────────────────────────────────
@@ -144,7 +155,7 @@ async def analyze(request: AnalyzeRequest):
         )
 
     try:
-        result = await agent.analyze(request.query, request.filename)
+        result = await get_agent().analyze(request.query, request.filename)
 
         # Save messages to session if session_id provided
         if request.session_id:
@@ -249,20 +260,22 @@ async def delete_session(session_id: str):
     return {"message": f"Session '{session_id}' deleted."}
 
 
-# ─── Serve Frontend ────────────────────────────────────────────
-@app.get("/")
-async def serve_frontend():
-    """Serve the frontend. Tries React build first, falls back to static HTML."""
-    react_path = os.path.join("frontend", "dist", "index.html")
-    if os.path.exists(react_path):
-        return FileResponse(react_path)
-    return FileResponse("static/index.html")
+# ─── Serve Frontend (skip on Vercel — Vercel serves static files directly) ──
+if not IS_VERCEL:
+    @app.get("/")
+    async def serve_frontend():
+        """Serve the frontend. Tries React build first, falls back to static HTML."""
+        react_path = os.path.join("frontend", "dist", "index.html")
+        if os.path.exists(react_path):
+            return FileResponse(react_path)
+        if os.path.exists("static/index.html"):
+            return FileResponse("static/index.html")
+        return JSONResponse({"message": "DataPilot API is running", "docs": "/docs"})
 
-
-# Serve React static assets if they exist
-react_dist = os.path.join("frontend", "dist")
-if os.path.exists(react_dist):
-    app.mount("/assets", StaticFiles(directory=os.path.join(react_dist, "assets")), name="react-assets")
+    # Serve React static assets if they exist
+    react_dist = os.path.join("frontend", "dist")
+    if os.path.exists(react_dist):
+        app.mount("/assets", StaticFiles(directory=os.path.join(react_dist, "assets")), name="react-assets")
 
 
 if __name__ == "__main__":

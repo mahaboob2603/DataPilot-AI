@@ -167,5 +167,4 @@ def get_session_messages(session_id: str) -> list:
     return messages
 
 
-# Initialize DB on import
-init_db()
+# DB is initialized via lifespan handler in main.py
